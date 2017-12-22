@@ -11,6 +11,7 @@
 
 int sc_main(int, char**)
 {
+	printf("sc_main\n");
 	NativeWrapper& cpu = *NativeWrapper::get_instance();
 	Memory inst_ram("inst_ram", INST_RAM_SIZE);
 	// Memory data_ram("Memory", SRAM_SIZE);
@@ -44,12 +45,12 @@ int sc_main(int, char**)
 	intc.out(cpu_irq);
 	cpu.irq(cpu_irq);
 
-	//      port             start addr      size
+	//      port             start addr      		size
 	bus.map(inst_ram.target, INST_RAM_BASEADDR, INST_RAM_SIZE);
 	// bus.map(data_ram.target, SRAM_BASEADDR,  SRAM_SIZE);
-	bus.map(vga.target,      VGA_BASEADDR,   VGA_SIZE);
-	bus.map(gpio.target,     GPIO_BASEADDR,  GPIO_SIZE);
-	bus.map(timer.target,    TIMER_BASEADDR, TIMER_SIZE);
+	bus.map(vga.target,      VGA_BASEADDR,   		VGA_SIZE);
+	bus.map(gpio.target,     GPIO_BASEADDR,  		GPIO_SIZE);
+	bus.map(timer.target,    TIMER_BASEADDR, 		TIMER_SIZE);
 	bus.map(intc.target,     INTC_BASEADDR,     INTC_SIZE);
 
 	// start the simulation
