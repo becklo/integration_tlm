@@ -5,8 +5,8 @@
 
 SC_MODULE(NativeWrapper) {
 
-	ensitlm::initiator_socket<NativeWrapper> socket;
-	sc_core::sc_in<bool>                            irq;
+	ensitlm::initiator_socket<NativeWrapper> 	socket;
+	sc_core::sc_in<bool>											irq;
 
 private:
 	SC_CTOR(NativeWrapper);
@@ -31,6 +31,12 @@ public:
 
 	bool              interrupt;
 	sc_core::sc_event interrupt_event;
+
+void 					hal_write32(unsigned int addr, unsigned int data);
+unsigned int 	hal_read32(unsigned int addr);
+void 					hal_cpu_relax();
+void 					hal_wait_for_irq();
+
 };
 
 #endif
