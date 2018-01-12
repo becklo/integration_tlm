@@ -44,6 +44,10 @@ NativeWrapper * NativeWrapper::get_instance() {
 NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
 							     irq("irq")
 {
+	SC_METHOD(hal_wait_for_irq);
+	sensitive << irq;
+
+	SC_THREAD(compute);
 	printf("wrapper construction\n");
 }
 
@@ -61,23 +65,24 @@ unsigned int NativeWrapper::hal_read32(unsigned int addr)
 
 void NativeWrapper::hal_cpu_relax()
 {
-	wait(sc_core::SC_ZERO_TIME);
+	wait(10,sc_core::SC_MS);
 }
 
 void NativeWrapper::hal_wait_for_irq()
 {
-	while(1){
-		if(!irq.posedge())
-			wait();
-	}
+	if(irq.posedge()){
+		NativeWrapper::get_instance()->interrupt_handler_internal();
+	}	
 }
 
 void NativeWrapper::compute()
 {
-	abort(); // TODO
+	main();
 }
 
 void NativeWrapper::interrupt_handler_internal()
 {
-	abort(); // TODO
+	interrupt=true;
+	interrupt_event.notify();
+	interrupt_handler();
 }
