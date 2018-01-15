@@ -1,5 +1,5 @@
 CC=gcc
-INCLUDE=-I. -I../../
+INCLUDE=-I. -I../..
 CFLAGS=$(INCLUDE)
 
 main.o: ../main.c hal.h ../../address_map.h
