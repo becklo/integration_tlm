@@ -25,11 +25,11 @@ sections.txt: $(EXEC)
 	$(TARGET_READELF) -S $< > $@
 
 
-$(EXEC): ldscript main.o boot.o
+$(EXEC): ldscript $(OBJS)
 	$(TARGET_LD) -T $^
-	
+
 main.o: hal.h ../main.c ../../address_map.h
-	$(TARGET_CC) -o $@ -c ../main.c $(INCLUDE)
+	$(TARGET_CC) -c ../main.c -o $@ $(INCLUDE)
 
 %.o: %.s
 	$(TARGET_CC) -c $< -o $@

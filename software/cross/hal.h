@@ -19,23 +19,19 @@
 /* Dummy implementation of abort(): invalid instruction */
 #define abort() do {				\
 	printf("abort() function called\r\n");  \
-	_hw_exception_handler();		\
 } while (0)
-
-uint32_t read32(uint32_t a) {
-	return(*(uint32_t*)a);
-}
-
-void write32(uint32_t a, uint32_t d) {
-	*(uint32_t*)a = d;
-}
 
 
 /* TODO: implement HAL primitives for cross-compilation */
-#define hal_read32(a)	read32(a) 	// MBWrapper::exec_data_request()	???? faire un instance de MBWrapper dans hal.h?
-#define hal_write32(a, d)  write32(a, d)
-#define hal_wait_for_irq() abort()
-#define hal_cpu_relax()    abort()
+#define hal_read32(a)	(*(uint32_t*)a)
+
+#define hal_write32(a, d)  do{ 	\
+	*((uint32_t*)a) = d; 					\
+}while(0)
+
+#define hal_wait_for_irq() while(!irq_received);
+
+#define hal_cpu_relax()
 
 void microblaze_enable_interrupts(void) {
 	__asm("ori     r3, r0, 2\n"
@@ -46,3 +42,8 @@ void microblaze_enable_interrupts(void) {
 #define printf(...) do {} while(0)
 
 #endif /* HAL_H */
+
+
+/*	a remettre dans l'abort
+_hw_exception_handler();		\
+*/

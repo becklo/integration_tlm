@@ -7,7 +7,7 @@
 #include "mb_wrapper.h"
 #include "microblaze.h"
 #include <iomanip>
-
+#define DEBUG
 
 /* Time between two step()s */
 static const sc_core::sc_time PERIOD(20, sc_core::SC_NS);
@@ -23,12 +23,23 @@ MBWrapper::MBWrapper(sc_core::sc_module_name name)
 {
 	m_iss.reset();
 	m_iss.setIrq(false);
+
 	SC_THREAD(run_iss);
+  SC_METHOD(irq_handler);
+  sensitive << irq;
         /* The method that is needed to forward the interrupts from the SystemC
          * environment to the ISS need to be declared here */
 }
 
 /* IRQ forwarding method to be defined here */
+void MBWrapper::irq_handler(void){
+  printf("MBWrapper::irq_handler\n");
+  if(irq.posedge()){
+    printf("MBWrapper::irq_handler POSEDGE\n");
+    m_iss.setIrq(true);
+  }
+}
+
 
 void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
                                   uint32_t mem_addr, uint32_t mem_wdata) {
@@ -38,7 +49,7 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 	case iss_t::READ_WORD: {
 		/* The ISS requested a data read
 		   (mem_addr into localbuf). */
-     socket.read(mem_addr,localbuf);
+     status = socket.read(mem_addr,localbuf);
      localbuf = uint32_machine_to_be(localbuf);
 #ifdef DEBUG
 		std::cout << hex << "read    " << setw(10) << localbuf
@@ -60,7 +71,7 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 	case iss_t::WRITE_WORD: {
 		/* The ISS requested a data write
 		   (mem_wdata at mem_addr). */
-		socket.write(mem_addr,uint32_be_to_machine(mem_wdata));
+		status = socket.write(mem_addr,uint32_be_to_machine(mem_wdata));
 #ifdef DEBUG
 		std::cout << hex << "wrote   " << setw(10) << mem_wdata
 		          << " at address " << mem_addr << std::endl;
@@ -76,6 +87,7 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 
 void MBWrapper::run_iss(void) {
 
+  tlm::tlm_response_status status;
 	int inst_count = 0;
 
 	while (true) {
@@ -91,7 +103,7 @@ void MBWrapper::run_iss(void) {
 				 * We have to do the instruction fetch
 				 * by reading from memory. */
         uint32_t localbuf;
-        socket.read(ins_addr,localbuf);
+        status = socket.read(ins_addr,localbuf);
         localbuf = uint32_machine_to_be(localbuf);
 				m_iss.setInstruction(0, localbuf);
 			}
@@ -108,7 +120,11 @@ void MBWrapper::run_iss(void) {
 				                  mem_wdata);
 			}
 			m_iss.step();
-                        /* IRQ handling to be done */
+
+      if(irq & inst_count > 5){
+        m_iss.setIrq(false);
+        inst_count=0;
+      }else inst_count++ ;
 		}
 
 		wait(PERIOD);
