@@ -37,6 +37,7 @@ tlm::tlm_response_status Gpio::read(const ensitlm::addr_t &a,
 		d = tri;
 		break;
 	default:
+		printf("offset:0x%x\n",a);
 		SC_REPORT_ERROR(name(), "register not implemented");
 		return tlm::TLM_ADDRESS_ERROR_RESPONSE;
 	}
@@ -53,6 +54,7 @@ tlm::tlm_response_status Gpio::write(const ensitlm::addr_t &a,
 		tri = d;
 		break;
 	default:
+		printf("offset:0x%x\n",a);
 		SC_REPORT_ERROR(name(), "register not implemented");
 		return tlm::TLM_ADDRESS_ERROR_RESPONSE;
 	}

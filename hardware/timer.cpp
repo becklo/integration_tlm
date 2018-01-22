@@ -3,7 +3,7 @@
 #include "offsets/timer.h"
 #include "offsets/memory.h"
 
-#define DEBUG
+//#define DEBUG
 
 TIMER::TIMER(sc_core::sc_module_name name, sc_core::sc_time p)
     : sc_core::sc_module(name), period(p) {
@@ -112,6 +112,7 @@ tlm::tlm_response_status TIMER::read(ensitlm::addr_t a, ensitlm::data_t &d) {
 }
 
 tlm::tlm_response_status TIMER::write(ensitlm::addr_t a, ensitlm::data_t d) {
+  printf("d(before):0x%x\n",d);
 	int timer = 0;
 	switch (a) {
 	case TIMER_0_CSR_OFFSET:
@@ -176,6 +177,7 @@ tlm::tlm_response_status TIMER::write(ensitlm::addr_t a, ensitlm::data_t d) {
 		if (d) {
 			SC_REPORT_WARNING(name(),
 			                  "invalid bits in write to CSR");
+      printf("d:0x%x\n",d);
 		}
 		break;
 	case TIMER_0_TLR_OFFSET:

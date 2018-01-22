@@ -185,13 +185,17 @@ int main() {
 		  BIT(TIMER_TINT) | BIT(TIMER_ENT) | BIT(TIMER_ENIT) |
 		  BIT(TIMER_ARHT) | BIT(TIMER_UDT));
 
+	printf("timer set\r\n");
 	refresh = 0;
 	old_img_addr = 0x20000 - 1024 - (VGA_LINE * VGA_HEIGHT) / CHAR_BIT;
+	// old_img_addr = 0x20000 - 1024 - (VGA_LINE * VGA_HEIGHT) / CHAR_BIT;
 	new_img_addr = old_img_addr - (VGA_LINE * VGA_HEIGHT) / CHAR_BIT;
 
+	printf("clear screen:\r\n");
 	clr_screen(old_img_addr);
-	//clr_screen(new_img_addr);
+	// clr_screen(new_img_addr);
 
+	printf("draw first gun:\r\n");
 	draw_gun(0, 30);
 
 	/* blinker */
@@ -211,8 +215,10 @@ int main() {
 	hal_write32(VGA_BASEADDR + VGA_CFG_OFFSET, old_img_addr);
 
 	/* program gpio to input */
-	hal_write32(GPIO_BASEADDR + GPIO_TRI_OFFSET, GPIO_INPUT);
-
+	printf("gpio set GPIO_TRI_OFFSET:\r\n");
+	hal_write32(GPIO_BASEADDR + 0x4, GPIO_INPUT);
+	// hal_write32(GPIO_BASEADDR + GPIO_TRI_OFFSET, GPIO_INPUT);
+	printf("gpio done:\r\n");
 	/* Enable and acknowledge all interrupts */
 	hal_write32(INTC_BASEADDR + XIN_MER_OFFSET, ~0);
 	hal_write32(INTC_BASEADDR + XIN_IER_OFFSET, ~0);

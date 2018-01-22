@@ -7,12 +7,12 @@
 #include "mb_wrapper.h"
 #include "microblaze.h"
 #include <iomanip>
-#define DEBUG
+//#define DEBUG
 
 /* Time between two step()s */
 static const sc_core::sc_time PERIOD(20, sc_core::SC_NS);
 
-//#define DEBUG
+// #define DEBUG
 //#define INFO
 
 using namespace std;
@@ -57,7 +57,19 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 #endif
 		m_iss.setDataResponse(0, localbuf);
 	} break;
-	case iss_t::READ_BYTE:
+  //////////////////////////////////////////////////////
+	case iss_t::READ_BYTE: {
+		/* The ISS requested a data read on 8 bits
+		   (mem_addr into localbuf). */
+     status = socket.read(mem_addr-(mem_addr%4),localbuf);
+     localbuf = uint32_machine_to_be(localbuf);
+#ifdef DEBUG
+		std::cout << hex << "read    " << setw(10) << localbuf
+		          << " at address " << mem_addr << std::endl;
+#endif
+		m_iss.setDataResponse(0, ((uint8_t*)&localbuf)[mem_addr%4]);
+	} break;
+  //////////////////////////////////////////////////////
 	case iss_t::WRITE_HALF:
 	case iss_t::WRITE_BYTE:
 	case iss_t::READ_HALF:
@@ -104,8 +116,10 @@ void MBWrapper::run_iss(void) {
 				 * by reading from memory. */
         uint32_t localbuf;
         status = socket.read(ins_addr,localbuf);
-        localbuf = uint32_machine_to_be(localbuf);
-				m_iss.setInstruction(0, localbuf);
+        #ifdef DEBUG
+    //    printf("iss instruction fetch:%d\n",status);
+        #endif
+        m_iss.setInstruction(0, uint32_machine_to_be(localbuf));
 			}
 
 			bool mem_asked;
@@ -121,7 +135,7 @@ void MBWrapper::run_iss(void) {
 			}
 			m_iss.step();
 
-      if(irq & inst_count > 5){
+      if(irq & (inst_count > 5)){
         m_iss.setIrq(false);
         inst_count=0;
       }else inst_count++ ;

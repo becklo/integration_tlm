@@ -14,7 +14,8 @@
 #define HAL_H
 
 #include <stdint.h>
-
+#include "hardware/offsets/uart.h"
+#include "address_map.h"
 
 /* Dummy implementation of abort(): invalid instruction */
 #define abort() do {				\
@@ -23,10 +24,10 @@
 
 
 /* TODO: implement HAL primitives for cross-compilation */
-#define hal_read32(a)	(*(uint32_t*)a)
+#define hal_read32(a)	(*(uint32_t*)(a))
 
 #define hal_write32(a, d)  do{ 	\
-	*((uint32_t*)a) = d; 					\
+	*((uint32_t*)(a)) = d; 				\
 }while(0)
 
 #define hal_wait_for_irq() while(!irq_received);
@@ -39,7 +40,12 @@ void microblaze_enable_interrupts(void) {
 }
 
 /* TODO: printf is disabled, for now ... */
-#define printf(...) do {} while(0)
+#define printf(string) do {\
+	char * addr = string;\
+	for(;*addr!='\0';addr++){\
+			hal_write32((UART_BASEADDR + UART_FIFO_WRITE), *addr);\
+	}\
+} while(0)
 
 #endif /* HAL_H */
 
